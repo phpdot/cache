@@ -187,4 +187,25 @@ final class ArrayDriverTest extends TestCase
 
         self::assertSame('value', $this->driver->get('key'));
     }
+
+    #[Test]
+    public function lruEvictionPromotesAccessedItems(): void
+    {
+        $driver = new ArrayDriver(maxItems: 3);
+
+        $driver->set('a', 1);
+        $driver->set('b', 2);
+        $driver->set('c', 3);
+
+        // Access 'a' to promote it to most recently used
+        $driver->get('a');
+
+        // Adding 'd' should evict 'b' (least recently used), not 'a'
+        $driver->set('d', 4);
+
+        self::assertNull($driver->get('b'));
+        self::assertSame(1, $driver->get('a'));
+        self::assertSame(3, $driver->get('c'));
+        self::assertSame(4, $driver->get('d'));
+    }
 }

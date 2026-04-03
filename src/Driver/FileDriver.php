@@ -110,7 +110,38 @@ final class FileDriver implements DriverInterface
      */
     public function has(string $key): bool
     {
-        return $this->get($key) !== null;
+        $path = $this->path($key);
+
+        if (!\is_file($path)) {
+            return false;
+        }
+
+        $handle = \fopen($path, 'rb');
+
+        if ($handle === false) {
+            return false;
+        }
+
+        $header = \fread($handle, 8);
+        \fclose($handle);
+
+        if ($header === false || \strlen($header) < 8) {
+            return false;
+        }
+
+        $expiry = \unpack('Jexpiry', $header);
+
+        if ($expiry === false) {
+            return false;
+        }
+
+        if ($expiry['expiry'] > 0 && \time() >= $expiry['expiry']) {
+            $this->delete($key);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
