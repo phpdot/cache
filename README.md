@@ -91,7 +91,7 @@ $cache->deleteMultiple(['user:1', 'user:2']);
 
 ```php
 $cache = new Store(new ArrayDriver(maxItems: 1000));
-// Evicts oldest entry when full
+// Evicts least recently used entry when full
 ```
 
 ### Custom driver
@@ -125,6 +125,10 @@ Store implements `Psr\SimpleCache\CacheInterface`:
 - TTL normalization: accepts `int`, `DateInterval`, or `null`
 - Negative TTL treated as expired
 - Throws `PHPdot\Cache\Exception\InvalidArgumentException` for invalid keys
+
+## Notes
+
+**`remember()` and null values:** PSR-16 cannot distinguish between "key not found" and "key stores null". If a `remember()` callback returns `null`, the callback will run on every call. Use `false` or a sentinel value instead of `null` for cacheable "empty" results.
 
 ## Requirements
 

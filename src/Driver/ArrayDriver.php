@@ -41,6 +41,11 @@ final class ArrayDriver implements DriverInterface
             return null;
         }
 
+        if ($this->maxItems > 0) {
+            unset($this->storage[$key]);
+            $this->storage[$key] = $entry;
+        }
+
         return $entry['value'];
     }
 
