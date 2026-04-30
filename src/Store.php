@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace PHPdot\Cache;
 
 use PHPdot\Cache\Exception\InvalidArgumentException;
+use PHPdot\Container\Attribute\Binds;
+use PHPdot\Container\Attribute\Singleton;
+use Psr\SimpleCache\CacheInterface;
 
 /**
  * PSR-16 cache implementation wrapping a DriverInterface backend.
@@ -12,6 +15,9 @@ use PHPdot\Cache\Exception\InvalidArgumentException;
  * @author Omar Hamdan <omar@phpdot.com>
  * @license MIT
  */
+#[Singleton]
+#[Binds(CacheInterface::class)]
+#[Binds(StoreInterface::class)]
 final class Store implements StoreInterface
 {
     public function __construct(
@@ -42,7 +48,7 @@ final class Store implements StoreInterface
         if ($seconds < 0) {
             $this->driver->delete($key);
 
-            return false;
+            return true;
         }
 
         return $this->driver->set($key, $value, $seconds);

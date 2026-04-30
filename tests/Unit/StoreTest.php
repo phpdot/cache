@@ -56,13 +56,14 @@ final class StoreTest extends TestCase
     }
 
     #[Test]
-    public function setWithNegativeTtlReturnsFalse(): void
+    public function setWithNegativeTtlDeletesKeyAndReturnsTrue(): void
     {
         $this->store->set('key', 'value');
 
         $result = $this->store->set('key', 'updated', -1);
 
-        self::assertFalse($result);
+        self::assertTrue($result);
+        self::assertNull($this->store->get('key'));
     }
 
     #[Test]

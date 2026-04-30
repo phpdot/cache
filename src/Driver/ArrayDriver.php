@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PHPdot\Cache\Driver;
 
 use PHPdot\Cache\DriverInterface;
+use PHPdot\Container\Attribute\Binds;
+use PHPdot\Container\Attribute\Singleton;
 
 /**
  * In-memory cache driver with TTL tracking and optional LRU eviction.
@@ -12,6 +14,8 @@ use PHPdot\Cache\DriverInterface;
  * @author Omar Hamdan <omar@phpdot.com>
  * @license MIT
  */
+#[Singleton]
+#[Binds(DriverInterface::class)]
 final class ArrayDriver implements DriverInterface
 {
     /** @var array<string, array{value: mixed, expiry: int}> */
@@ -91,7 +95,19 @@ final class ArrayDriver implements DriverInterface
      */
     public function has(string $key): bool
     {
-        return $this->get($key) !== null;
+        if (!isset($this->storage[$key])) {
+            return false;
+        }
+
+        $entry = $this->storage[$key];
+
+        if ($entry['expiry'] > 0 && \time() >= $entry['expiry']) {
+            unset($this->storage[$key]);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -102,10 +118,8 @@ final class ArrayDriver implements DriverInterface
         $results = [];
 
         foreach ($keys as $key) {
-            $value = $this->get($key);
-
-            if ($value !== null) {
-                $results[$key] = $value;
+            if ($this->has($key)) {
+                $results[$key] = $this->get($key);
             }
         }
 
