@@ -135,6 +135,28 @@ final class ArrayDriverTest extends TestCase
     }
 
     #[Test]
+    public function hasReturnsTrueForKeyStoredAsNull(): void
+    {
+        $this->driver->set('nullable', null);
+
+        self::assertTrue($this->driver->has('nullable'));
+    }
+
+    #[Test]
+    public function getMultiplePreservesStoredNullValues(): void
+    {
+        $this->driver->set('a', '1');
+        $this->driver->set('b', null);
+
+        $result = $this->driver->getMultiple(['a', 'b', 'missing']);
+
+        self::assertSame('1', $result['a']);
+        self::assertArrayHasKey('b', $result);
+        self::assertNull($result['b']);
+        self::assertArrayNotHasKey('missing', $result);
+    }
+
+    #[Test]
     public function setMultipleStoresAllValues(): void
     {
         self::assertTrue($this->driver->setMultiple(['a' => '1', 'b' => '2']));
